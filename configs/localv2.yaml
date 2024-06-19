@@ -1,0 +1,67 @@
+database:
+  file_path: cato_db
+auth:
+  hash:
+    cost: 10
+  token:
+    expires_in: 24h
+    regenerate_token_before_expiry: 1h
+http:
+  address: "0.0.0.0:8080"
+logic:
+  judge:
+    schedule: "@every 5s"
+    submission_retry_delay: 5s
+    languages:
+      - value: c
+        name: C
+        compile:
+          image: "docker.io/library/gcc:9.5.0-bullseye"
+          command_template: ["gcc", "-o", "$PROGRAM", "-O2", "$SOURCE"]
+          timeout: 30s
+          cpu_quota: 4000000
+          memory: 4GiB
+          source_file_name: main.c
+          program_file_name: a.out
+        test_case_run:
+          image: "docker.io/library/debian:bullseye-slim"
+          command_template:
+            ["timeout", "--foreground", "$TIME_LIMIT", "$PROGRAM"]
+          cpu_quota: 1000000
+      - value: cpp
+        name: C++
+        compile:
+          image: "docker.io/library/gcc:9.5.0-bullseye"
+          command_template: ["g++", "-o", "$PROGRAM", "-O2", "$SOURCE"]
+          timeout: 30s
+          cpu_quota: 4000000
+          memory: 4GiB
+          source_file_name: main.cpp
+          program_file_name: a.out
+        test_case_run:
+          image: "docker.io/library/debian:bullseye-slim"
+          command_template:
+            ["timeout", "--foreground", "$TIME_LIMIT", "$PROGRAM"]
+          cpu_quota: 1000000
+      - value: java
+        name: Java
+        compile:
+          image: "docker.io/library/openjdk:22-jdk-slim-buster"
+          command_template: ["javac", "$SOURCE"]
+          timeout: 30s
+          cpu_quota: 4000000
+          memory: 4GiB
+          source_file_name: Main.java
+          program_file_name: Main.class
+        test_case_run:
+          image: "docker.io/library/openjdk:22-jdk-slim-buster"
+          command_template:
+            ["timeout", "--foreground", "$TIME_LIMIT", "java", "Main"]
+          cpu_quota: 1000000
+      - value: python
+        name: Python 3
+        test_case_run:
+          image: "docker.io/library/python:3.13-rc-slim"
+          command_template:
+            ["timeout", "--foreground", "$TIME_LIMIT", "python", "$PROGRAM"]
+          cpu_quota: 1000000

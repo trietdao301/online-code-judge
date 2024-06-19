@@ -1,0 +1,52 @@
+database:
+  file_path: cato_db
+  mongo_collection: 
+    submission: submission
+    test_case: test_case
+    account: account
+    problem: problem 
+auth:
+  hash:
+    cost: 10
+  token:
+    expires_in: 24h
+    regenerate_token_before_expiry: 1h
+http:
+  address: "0.0.0.0:8080"
+logic:
+  judge:
+    schedule: "@every 5s"
+    submission_retry_delay: 5s
+    languages:
+      - value: c
+        name: C
+        test_case_run:
+          image: "docker.io/library/debian:bullseye-slim"
+          command_template:
+            ["timeout", "--foreground", "$TIME_LIMIT", "$PROGRAM"]
+          cpu_quota: 1000000
+          timeout: "5s"
+      - value: cpp
+        name: C++
+        test_case_run:
+          image: "docker.io/library/debian:bullseye-slim"
+          command_template:
+            ["timeout", "--foreground", "$TIME_LIMIT", "$PROGRAM"]
+          cpu_quota: 1000000
+          timeout: "5s"
+      - value: java
+        name: Java
+        test_case_run:
+          image: "docker.io/library/openjdk:22-jdk-slim-buster"
+          command_template:
+            ["timeout", "--foreground", "$TIME_LIMIT", "java", "Main"]
+          cpu_quota: 1000000
+          timeout: "5s"
+      - value: python
+        name: Python 3
+        test_case_run:
+          image: "docker.io/library/python:3.13-rc-slim"
+          command_template:
+            ["timeout", "--foreground", "$TIME_LIMIT", "python", "$PROGRAM"]
+          cpu_quota: 1000000
+          timeout: "5s"
