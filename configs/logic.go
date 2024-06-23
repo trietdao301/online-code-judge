@@ -8,7 +8,8 @@ type TestCaseRun struct {
 	Image           string   `yaml:"image"`
 	CommandTemplate []string `yaml:"command_template"`
 	CPUQuota        int64    `yaml:"cpu_quota"`
-	Timeout         string   `yaml:"timeout"`
+	CodeFileName    string   `yaml:"code_file_name"`
+	TestFileName    string   `yaml:"test_file_name"`
 }
 
 type Language struct {

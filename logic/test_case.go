@@ -54,7 +54,7 @@ func (t testCase) CreateTestCase(ctx context.Context, in *models.CreateTestCaseR
 	}
 
 	update := bson.M{
-		"TestCaseUUID": testCase.UUID,
+		"testCaseUUID": testCase.UUID,
 	}
 
 	err = t.problemDataAccessor.UpdateProblem(ctx, in.ProblemUUID, update)

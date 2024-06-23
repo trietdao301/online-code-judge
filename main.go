@@ -39,11 +39,6 @@ func main() {
 		logger.Error(err.Error())
 	}
 
-	judgeConfig := &config.Logic.Judge
-	judge, err := logic.NewJudgeLogic(logger, mongoClient, docker, judgeConfig)
-	if err != nil {
-		logger.Error(err.Error())
-	}
 	defer db.CloseConnection(mongoClient, context, cancleFunc)
 	testCaseDataCollection := mongoClient.Database(config.Database.FilePath).Collection(config.Database.MongoCollection.TestCase)
 	testCaseDataAccessor, err := db.NewTestCaseDataAccessor(testCaseDataCollection, logger)
@@ -62,6 +57,12 @@ func main() {
 	submissionDataCollection := mongoClient.Database(config.Database.FilePath).Collection(config.Database.MongoCollection.Submission)
 
 	submissionDataAccessor, err := db.NewSubmissionDataAccessor(submissionDataCollection, logger)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+
+	judgeConfig := &config.Logic.Judge
+	judge, err := logic.NewJudgeLogic(logger, mongoClient, docker, judgeConfig, submissionDataAccessor, testCaseDataAccessor, problemDataAccessor)
 	if err != nil {
 		logger.Error(err.Error())
 	}

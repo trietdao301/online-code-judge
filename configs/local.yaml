@@ -18,14 +18,6 @@ logic:
     schedule: "@every 5s"
     submission_retry_delay: 5s
     languages:
-      - value: c
-        name: C
-        test_case_run:
-          image: "docker.io/library/debian:bullseye-slim"
-          command_template:
-            ["timeout", "--foreground", "$TIME_LIMIT", "$PROGRAM"]
-          cpu_quota: 1000000
-          timeout: "5s"
       - value: cpp
         name: C++
         test_case_run:
@@ -33,7 +25,8 @@ logic:
           command_template:
             ["timeout", "--foreground", "$TIME_LIMIT", "$PROGRAM"]
           cpu_quota: 1000000
-          timeout: "5s"
+          code_file_name: main.cpp 
+          test_file_name: test.cpp
       - value: java
         name: Java
         test_case_run:
@@ -41,12 +34,14 @@ logic:
           command_template:
             ["timeout", "--foreground", "$TIME_LIMIT", "java", "Main"]
           cpu_quota: 1000000
-          timeout: "5s"
+          code_file_name: main.java 
+          test_file_name: test.java 
       - value: python
         name: Python 3
         test_case_run:
           image: "docker.io/library/python:3.13-rc-slim"
           command_template:
-            ["timeout", "--foreground", "$TIME_LIMIT", "python", "$PROGRAM"]
+            ["timeout", "--foreground", "$TIME_LIMIT", "python", "$TEST_FILE"]
           cpu_quota: 1000000
-          timeout: "5s"
+          code_file_name: main.py
+          test_file_name: test.py

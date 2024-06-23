@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"example/server/handlers/models"
@@ -43,12 +44,13 @@ func (s *submission) CreateSubmission(ctx context.Context, in *models.CreateSubm
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
+	var UUID = uuid.NewString()
 	submission := &db.Submission{
-		UUID:              uuid.NewString(),
+		UUID:              UUID,
 		ProblemUUID:       in.ProblemUUID,
 		AuthorAccountUUID: in.AuthorAccountUUID,
 		Content:           in.Content,
-		Language:          in.Language,
+		Language:          strings.ToLower(in.Language),
 		Status:            db.SubmissionStatusSubmitted,
 		GradingResult:     "",
 		CreatedTime:       time.Now().UnixMilli(),
@@ -57,7 +59,8 @@ func (s *submission) CreateSubmission(ctx context.Context, in *models.CreateSubm
 	if err != nil {
 		return nil, err
 	}
-	s.judge.ScheduleJudgeLocalSubmission(submission.UUID)
+	time.Sleep(1 * time.Second)
+	s.judge.ScheduleJudgeLocalSubmission(UUID)
 	return &models.CreateSubmissionResponse{Submission: *submission}, nil
 }
 
