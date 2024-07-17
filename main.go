@@ -45,29 +45,51 @@ func main() {
 	if err != nil {
 		logger.Error(err.Error())
 	}
-
+	submissionDataCollection := mongoClient.Database(config.Database.FilePath).Collection(config.Database.MongoCollection.Submission)
+	submissionDataAccessor, err := db.NewSubmissionDataAccessor(submissionDataCollection, logger)
+	if err != nil {
+		logger.Error(err.Error())
+	}
 	problemDataCollection := mongoClient.Database(config.Database.FilePath).Collection(config.Database.MongoCollection.Problem)
 	problemDataAccessor, err := db.NewProblemDataAccessor(problemDataCollection, logger)
 	if err != nil {
 		logger.Error("fail to create problem data accessor")
 	}
-	problemLogic := logic.NewProblemLogic(logger, problemDataAccessor)
-	testCaseLogic := logic.NewTestCaseLogic(testCaseDataAccessor, problemDataAccessor, logger)
+	submissionSnippetDataCollection := mongoClient.Database(config.Database.FilePath).Collection(config.Database.MongoCollection.SubmissionSnippet)
+	submissionSnippetDataAccessor := db.NewSubmissionSnippetDataAccessor(submissionSnippetDataCollection, logger)
 
-	submissionDataCollection := mongoClient.Database(config.Database.FilePath).Collection(config.Database.MongoCollection.Submission)
-
-	submissionDataAccessor, err := db.NewSubmissionDataAccessor(submissionDataCollection, logger)
+	accountDataCollection := mongoClient.Database(config.Database.FilePath).Collection(config.Database.MongoCollection.Account)
+	accountDataAccessor, err := db.NewAccountDataAccessor(accountDataCollection, logger)
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error("fail to create account data accessor")
 	}
 
+	problemLogic := logic.NewProblemLogic(logger, problemDataAccessor, testCaseDataAccessor, submissionSnippetDataAccessor)
+	testCaseLogic := logic.NewTestCaseLogic(testCaseDataAccessor, problemDataAccessor, logger)
 	judgeConfig := &config.Logic.Judge
 	judge, err := logic.NewJudgeLogic(logger, mongoClient, docker, judgeConfig, submissionDataAccessor, testCaseDataAccessor, problemDataAccessor)
 	if err != nil {
 		logger.Error(err.Error())
 	}
 	submissionLogic := logic.NewSubmissionLogic(judge, logger, mongoClient, submissionDataAccessor)
+	submissionSnippetLogic := logic.NewSubmissionSnippetLogic(logger, submissionSnippetDataAccessor, problemDataAccessor)
+	testCaseAndSubmissionSnippetLogic := logic.NewTestCaseAndSubmissionSnippetLogic(logger, problemDataAccessor, testCaseDataAccessor, submissionSnippetDataAccessor)
+	tokenLogic, err := logic.NewTokenLogic(logger, accountDataAccessor, config.Token)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	accountLogic := logic.NewAccountLogic(logger, accountDataAccessor, tokenLogic)
 
-	server := handlers.NewAPIServerHandler(submissionLogic, testCaseLogic, config, problemLogic, logger)
+	server := handlers.NewAPIServerHandler(
+		submissionLogic,
+		testCaseLogic,
+		config,
+		problemLogic,
+		submissionSnippetLogic,
+		testCaseAndSubmissionSnippetLogic,
+		accountLogic,
+		tokenLogic,
+		logger,
+	)
 	server.Start()
 }

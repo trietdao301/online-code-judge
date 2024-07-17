@@ -1,6 +1,8 @@
 package models
 
-import "example/server/db"
+import (
+	"example/server/db"
+)
 
 type CreateSubmissionRequest struct {
 	ProblemUUID       string
@@ -14,6 +16,10 @@ type CreateSubmissionResponse struct {
 
 type GetSubmissionRequest struct {
 	UUID string
+}
+
+type GetSubmissionListResponse struct {
+	Submissions []*db.Submission
 }
 
 type DeleteSubmissionRequest struct {
@@ -34,6 +40,13 @@ type CreateTestCaseRequest struct {
 	ProblemUUID string
 	Content     string `validate:"max=5242880"`
 	IsHidden    bool
+	Language    string
+}
+type GetTestCaseListRequest struct {
+	ProblemUUID string
+}
+type GetTestCaseListResponse struct {
+	TestCaseList []db.TestCase
 }
 
 type GetTestCaseRequest struct {
@@ -59,9 +72,99 @@ type CreateProblemRequest struct {
 	MemoryLimitInByte      uint64
 }
 
+type DeleteProblemRequest struct {
+	ProblemUUID string
+}
+
 type CreateProblemResponse struct {
 	UUID              string
 	DisplayName       string
 	Description       string
 	AuthorAccountUUID string
+	CreatedAt         string
+	UpdatedAt         string
+}
+
+type GetProblemListResponse struct {
+	ListOfProblem []db.Problem
+	TotalCount    int
+}
+
+type GetSubmissionSnippetRequest struct {
+	SubmissionSnippetUUID string
+}
+
+type GetSubmissionSnippetResponse struct {
+	CodeSnippet string
+	Language    string
+}
+
+type CreateSubmissionSnippetRequest struct {
+	CodeSnippet   string
+	Language      string
+	OfProblemUUID string
+}
+
+type CreateSubmissionSnippetResponse struct {
+	UUID     string
+	Language string
+}
+
+type CreateTestCaseAndSubmissionSnippetRequest struct {
+	CodeSnippet   string
+	CodeTest      string
+	OfProblemUUID string
+	Language      string
+}
+
+type GetAccountRequest struct {
+	UUID string
+}
+
+type GetAccountResponse struct {
+	Account db.Account
+}
+type CreateAccountRequest struct {
+	Username string
+	Password string
+	Role     string
+}
+type CreateAccountResponse struct {
+	Username  string
+	Role      string
+	CreatedAt string
+	UpdatedAt string
+}
+
+type GetAccountListResponse struct {
+	ListOfAccounts []db.Account
+	TotalCount     int
+}
+
+type UpdateAccountRequest struct {
+	UUID           string
+	RequestingRole string
+}
+
+type UpdateAccountResponse struct {
+	UUID      string
+	Username  string
+	Role      string
+	UpdatedAt string
+}
+
+type DeleteAccountRequest struct {
+	UUID string
+}
+
+type CreateSessionRequest struct {
+	Username string
+	Password string
+}
+
+type CreateSessionResponse struct {
+	Token       string
+	Username    string
+	Role        string
+	AccountUUID string
 }

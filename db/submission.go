@@ -42,10 +42,12 @@ type submissionDataAccessor struct {
 	db     *mongo.Collection
 	logger *zap.Logger
 }
+
 type SubmissionDataAccessor interface {
 	CreateSubmission(ctx context.Context, submission *Submission) error
 	GetSubmissionByUUID(ctx context.Context, uuid string) (*Submission, error)
 	UpdateSubmissionByUUID(ctx context.Context, uuid string, update map[string]any) error
+	GetSubmissionsByProblemAndAuthor(ctx context.Context, problemUUID, authorAccountUUID string) ([]*Submission, error)
 }
 
 func (s *submissionDataAccessor) CreateSubmission(ctx context.Context, submission *Submission) error {
@@ -65,10 +67,10 @@ func (s *submissionDataAccessor) GetSubmissionByUUID(ctx context.Context, uuid s
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			s.logger.Error("fail to find submission", zap.Any("UUID", uuid))
-			return nil, nil // Return nil if no document is found
+			return &Submission{}, nil // Return nil if no document is found
 		}
 		s.logger.Error("fail to get submission", zap.Any("UUID", uuid), zap.Error(err))
-		return nil, err
+		return &Submission{}, err
 	}
 	return &submission, nil
 }
@@ -89,6 +91,44 @@ func (s *submissionDataAccessor) UpdateSubmissionByUUID(ctx context.Context, uui
 		return fmt.Errorf("no submission found with UUID: %s", uuid)
 	}
 	return nil
+}
+
+func (s *submissionDataAccessor) GetSubmissionsByProblemAndAuthor(ctx context.Context, problemUUID, authorAccountUUID string) ([]*Submission, error) {
+	filter := bson.M{
+		"problemUUID":       problemUUID,
+		"authorAccountUUID": authorAccountUUID,
+	}
+
+	s.logger.Info("getting submissions by problem UUID and author account UUID",
+		zap.String("problemUUID", problemUUID),
+		zap.String("authorAccountUUID", authorAccountUUID))
+
+	cursor, err := s.db.Find(ctx, filter)
+	if err != nil {
+		s.logger.Error("fail to find submissions",
+			zap.String("problemUUID", problemUUID),
+			zap.String("authorAccountUUID", authorAccountUUID),
+			zap.Error(err))
+		return []*Submission{}, err
+	}
+	defer cursor.Close(ctx)
+
+	var submissions []*Submission
+	for cursor.Next(ctx) {
+		var submission Submission
+		if err := cursor.Decode(&submission); err != nil {
+			s.logger.Error("fail to decode submission", zap.Error(err))
+			return []*Submission{}, err
+		}
+		submissions = append(submissions, &submission)
+	}
+
+	if err := cursor.Err(); err != nil {
+		s.logger.Error("cursor error", zap.Error(err))
+		return []*Submission{}, err
+	}
+
+	return submissions, nil
 }
 
 func NewSubmissionDataAccessor(db *mongo.Collection, logger *zap.Logger) (SubmissionDataAccessor, error) {

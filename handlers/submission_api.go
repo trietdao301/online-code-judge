@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"example/server/handlers/models"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 func (s *apiServerHandler) handleSubmission(w http.ResponseWriter, r *http.Request) error {
@@ -28,10 +30,29 @@ func (s *apiServerHandler) GetSubmission(w http.ResponseWriter, r *http.Request)
 		getSubmissionRequest models.GetSubmissionRequest
 		context              = r.Context()
 	)
-	err := json.NewDecoder(r.Body).Decode(&getSubmissionRequest)
+	token, err := s.validateRequestAndExtractToken(r)
 	if err != nil {
-		return WriteJSON(w, http.StatusInternalServerError, err)
+		return WriteJSON(w, http.StatusUnauthorized, err.Error())
 	}
+	_, role, _, err := s.tokenLogic.ExtractTokenData(context, token)
+	if err != nil {
+		return WriteJSON(w, http.StatusUnauthorized, err.Error())
+	}
+	switch role {
+	case RoleContestant, RoleAdmin:
+		break
+	case RoleProblemSetter:
+		return WriteJSON(w, http.StatusUnauthorized, "Problem Setter can't get submission")
+	default:
+		return WriteJSON(w, http.StatusUnauthorized, "Insufficient permissions")
+	}
+
+	params := mux.Vars(r)
+	uuid := params["submissionUUID"]
+	if uuid == "" {
+		return WriteJSON(w, http.StatusBadRequest, "Missing UUID parameter")
+	}
+	getSubmissionRequest.UUID = uuid
 	res, err := s.submissionLogic.GetSubmission(context, &getSubmissionRequest)
 	if err != nil {
 		return WriteJSON(w, http.StatusInternalServerError, err)
@@ -46,8 +67,24 @@ func (s *apiServerHandler) CreateSubmission(w http.ResponseWriter, r *http.Reque
 		submissionRequest models.CreateSubmissionRequest
 		context           = r.Context()
 	)
+	token, err := s.validateRequestAndExtractToken(r)
+	if err != nil {
+		return WriteJSON(w, http.StatusUnauthorized, err.Error())
+	}
+	_, role, _, err := s.tokenLogic.ExtractTokenData(context, token)
+	if err != nil {
+		return WriteJSON(w, http.StatusUnauthorized, err.Error())
+	}
+	switch role {
+	case RoleContestant, RoleAdmin:
+		break
+	case RoleProblemSetter:
+		return WriteJSON(w, http.StatusUnauthorized, "Problem Setter can't submit")
+	default:
+		break
+	}
 	// Decode the request body into the Submission struct
-	err := json.NewDecoder(r.Body).Decode(&submissionRequest)
+	err = json.NewDecoder(r.Body).Decode(&submissionRequest)
 	if err != nil {
 		s.logger.Error("fail to decode submission request body to submission struct")
 		return WriteJSON(w, http.StatusInternalServerError, err)

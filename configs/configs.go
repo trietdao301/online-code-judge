@@ -17,6 +17,7 @@ type Config struct {
 	Http        HTTP        `yaml:"http"`
 	Logic       Logic       `yaml:"logic"`
 	TestCaseRun TestCaseRun `yaml:"test_case_run"`
+	Token       Token       `yaml:"token"`
 }
 
 func NewConfig(filePath string) (Config, error) {

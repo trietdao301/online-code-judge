@@ -19,6 +19,7 @@ type Submission interface {
 	CreateSubmission(ctx context.Context, in *models.CreateSubmissionRequest) (*models.CreateSubmissionResponse, error)
 	DeleteSubmission(ctx context.Context, in *models.DeleteSubmissionRequest) error
 	UpdateSubmission(ctx context.Context, in *models.UpdateSubmissionRequest) error
+	GetSubmissionsByProblemAndAuthor(ctx context.Context, problemUUID, authorAccountUUID string) (*models.GetSubmissionListResponse, error)
 }
 
 type submission struct {
@@ -40,7 +41,7 @@ func (s *submission) GetSubmission(ctx context.Context, in *models.GetSubmission
 
 // CreateSubmission implements Submission.
 func (s *submission) CreateSubmission(ctx context.Context, in *models.CreateSubmissionRequest) (*models.CreateSubmissionResponse, error) {
-	s.logger.Info("Creating Submission...")
+	s.logger.Info("Creating Submission...", zap.Any("authorID: ", in.AuthorAccountUUID))
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -62,6 +63,24 @@ func (s *submission) CreateSubmission(ctx context.Context, in *models.CreateSubm
 	time.Sleep(1 * time.Second)
 	s.judge.ScheduleJudgeLocalSubmission(UUID)
 	return &models.CreateSubmissionResponse{Submission: *submission}, nil
+}
+
+func (s *submission) GetSubmissionsByProblemAndAuthor(ctx context.Context, problemUUID, authorAccountUUID string) (*models.GetSubmissionListResponse, error) {
+	s.logger.Info("Getting submissions by problem and author",
+		zap.String("problemUUID", problemUUID),
+		zap.String("authorAccountUUID", authorAccountUUID))
+	var response models.GetSubmissionListResponse
+
+	submissions, err := s.submissionDataAccessor.GetSubmissionsByProblemAndAuthor(ctx, problemUUID, authorAccountUUID)
+	if err != nil {
+		s.logger.Error("Failed to get submissions by problem and author",
+			zap.String("problemUUID", problemUUID),
+			zap.String("authorAccountUUID", authorAccountUUID),
+			zap.Error(err))
+		return nil, err
+	}
+	response.Submissions = submissions
+	return &response, nil
 }
 
 // CreateSubmission implements Submission.
