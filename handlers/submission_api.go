@@ -55,7 +55,7 @@ func (s *apiServerHandler) GetSubmission(w http.ResponseWriter, r *http.Request)
 	getSubmissionRequest.UUID = uuid
 	res, err := s.submissionLogic.GetSubmission(context, &getSubmissionRequest)
 	if err != nil {
-		return WriteJSON(w, http.StatusInternalServerError, err)
+		return WriteJSON(w, http.StatusInternalServerError, err.Error())
 	}
 	s.logger.Info("Response GET submission")
 	return WriteJSON(w, http.StatusOK, res)

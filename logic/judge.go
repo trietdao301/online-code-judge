@@ -97,7 +97,7 @@ func (j judge) judgeLocalSubmission(ctx context.Context, submissionUUID string) 
 		j.logger.Error("fail to get problem by UUID", zap.Error(err), zap.Any("problemUUID", submissionDB.ProblemUUID))
 		return
 	}
-	testCase, err := j.testDataAccessor.GetTestCaseByProblemUUID(ctx, problem.UUID)
+	testCase, err := j.testDataAccessor.GetTestCaseByProblemUUIDAndLanguage(ctx, problem.UUID, submissionDB.Language)
 	if err != nil {
 		j.logger.Error("fail to get test case by problemUUID", zap.Error(err), zap.Any("problemUUID", problem.UUID))
 		return
@@ -106,7 +106,7 @@ func (j judge) judgeLocalSubmission(ctx context.Context, submissionUUID string) 
 	output, err := j.judgeSubmission(ctx, submissionDB.Language, submissionDB.Content, testCase.TestFileContent, problem.TimeLimitInMillisecond, problem.MemoryLimitInByte)
 	if err != nil {
 		j.logger.Error(err.Error())
-		panic(err)
+		return
 	}
 
 	j.updateSubmission(ctx, submissionUUID, output.ReturnLog, db.SubmissionStatusFinished)

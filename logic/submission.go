@@ -34,7 +34,7 @@ func (s *submission) GetSubmission(ctx context.Context, in *models.GetSubmission
 	submissionRes, err := s.submissionDataAccessor.GetSubmissionByUUID(ctx, in.UUID)
 	if err != nil {
 		s.logger.Error("fail to create submission database", zap.Error(err))
-		return nil, nil
+		return &models.GetSubmissionResponse{}, err
 	}
 	return &models.GetSubmissionResponse{Submission: *submissionRes}, nil
 }

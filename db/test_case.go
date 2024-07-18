@@ -21,11 +21,31 @@ type TestCaseDataAccessor interface {
 	GetTestCaseByProblemUUID(ctx context.Context, UUID string) (*TestCase, error)
 	GetTestCaseByUUID(ctx context.Context, UUID string) (*TestCase, error)
 	DeleteTestCase(ctx context.Context, testCaseUUID string) error
+	GetTestCaseByProblemUUIDAndLanguage(ctx context.Context, problemUUID string, language string) (*TestCase, error)
 }
 
 type testCaseDataAccessor struct {
 	db     *mongo.Collection
 	logger *zap.Logger
+}
+
+func (t testCaseDataAccessor) GetTestCaseByProblemUUIDAndLanguage(ctx context.Context, problemUUID string, language string) (*TestCase, error) {
+	filter := bson.M{
+		"ofProblemUUID": problemUUID,
+		"language":      language,
+	}
+	var testCase TestCase
+	err := t.db.FindOne(ctx, filter).Decode(&testCase)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			t.logger.Info("No test case found", zap.String("problemUUID", problemUUID), zap.String("language", language))
+			return nil, nil // Return nil if no document is found
+		}
+		t.logger.Error("Failed to get test case", zap.String("problemUUID", problemUUID), zap.String("language", language), zap.Error(err))
+		return nil, err
+	}
+	t.logger.Info("Retrieved test case", zap.String("UUID", testCase.UUID), zap.String("problemUUID", problemUUID), zap.String("language", language))
+	return &testCase, nil
 }
 
 // CreateTestCase implements TestCaseDataAccesor.

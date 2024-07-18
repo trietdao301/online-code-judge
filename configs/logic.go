@@ -10,6 +10,10 @@ type TestCaseRun struct {
 	CPUQuota        int64    `yaml:"cpu_quota"`
 	CodeFileName    string   `yaml:"code_file_name"`
 	TestFileName    string   `yaml:"test_file_name"`
+	StdOut          bool     `yaml:"stdOut"`
+	StdErr          bool     `yaml:"stdErr"`
+	DownloadTestUrl *string  `yaml:"download_test_url,omitempty"`
+	TestLibraryName *string  `yaml:"test_library_name,omitempty"`
 }
 
 type Language struct {
