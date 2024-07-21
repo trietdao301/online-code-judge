@@ -3,15 +3,28 @@ package db
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
+func init() {
+	// Load the .env file
+	if err := godotenv.Load(); err != nil {
+		fmt.Println("No .env file found")
+	}
+}
+
 func SetupMongoDB() (*mongo.Client, context.Context, context.CancelFunc) {
-	client, ctx, cancel, err := connect("mongodb://localhost:27017/")
+	uri := os.Getenv("MONGODB_URI")
+	if uri == "" {
+		panic("MONGODB_URI environment variable is not set")
+	}
+	client, ctx, cancel, err := connect(uri)
 	if err != nil {
 		panic(fmt.Sprintf("Mongo DB Connect issue %s", err))
 	}
@@ -30,10 +43,11 @@ func SetupMongoDB() (*mongo.Client, context.Context, context.CancelFunc) {
 // context.CancelFunc will be used to cancel context and
 // resource associated with it.
 func connect(uri string) (*mongo.Client, context.Context, context.CancelFunc, error) {
-
+	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
+	opts := options.Client().ApplyURI(uri).SetServerAPIOptions(serverAPI)
 	ctx, cancel := context.WithTimeout(context.Background(),
 		15*time.Second)
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
+	client, err := mongo.Connect(ctx, opts)
 	return client, ctx, cancel, err
 }
 

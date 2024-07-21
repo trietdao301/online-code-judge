@@ -40,25 +40,25 @@ func main() {
 	}
 
 	defer db.CloseConnection(mongoClient, context, cancleFunc)
-	testCaseDataCollection := mongoClient.Database(config.Database.FilePath).Collection(config.Database.MongoCollection.TestCase)
+	testCaseDataCollection := mongoClient.Database(config.Database.Name).Collection(config.Database.MongoCollection.TestCase)
 	testCaseDataAccessor, err := db.NewTestCaseDataAccessor(testCaseDataCollection, logger)
 	if err != nil {
 		logger.Error(err.Error())
 	}
-	submissionDataCollection := mongoClient.Database(config.Database.FilePath).Collection(config.Database.MongoCollection.Submission)
+	submissionDataCollection := mongoClient.Database(config.Database.Name).Collection(config.Database.MongoCollection.Submission)
 	submissionDataAccessor, err := db.NewSubmissionDataAccessor(submissionDataCollection, logger)
 	if err != nil {
 		logger.Error(err.Error())
 	}
-	problemDataCollection := mongoClient.Database(config.Database.FilePath).Collection(config.Database.MongoCollection.Problem)
+	problemDataCollection := mongoClient.Database(config.Database.Name).Collection(config.Database.MongoCollection.Problem)
 	problemDataAccessor, err := db.NewProblemDataAccessor(problemDataCollection, logger)
 	if err != nil {
 		logger.Error("fail to create problem data accessor")
 	}
-	submissionSnippetDataCollection := mongoClient.Database(config.Database.FilePath).Collection(config.Database.MongoCollection.SubmissionSnippet)
+	submissionSnippetDataCollection := mongoClient.Database(config.Database.Name).Collection(config.Database.MongoCollection.SubmissionSnippet)
 	submissionSnippetDataAccessor := db.NewSubmissionSnippetDataAccessor(submissionSnippetDataCollection, logger)
 
-	accountDataCollection := mongoClient.Database(config.Database.FilePath).Collection(config.Database.MongoCollection.Account)
+	accountDataCollection := mongoClient.Database(config.Database.Name).Collection(config.Database.MongoCollection.Account)
 	accountDataAccessor, err := db.NewAccountDataAccessor(accountDataCollection, logger)
 	if err != nil {
 		logger.Error("fail to create account data accessor")
