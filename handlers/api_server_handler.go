@@ -34,9 +34,9 @@ func makeHTTPHandleFunc(f apiFunc) http.HandlerFunc {
 }
 
 const (
-	RoleContestant    = "contestant"
-	RoleAdmin         = "admin"
-	RoleProblemSetter = "problem_setter"
+	RoleContestant    = "Contestant"
+	RoleAdmin         = "Admin"
+	RoleProblemSetter = "ProblemSetter"
 )
 
 type apiServerHandler struct {

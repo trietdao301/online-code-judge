@@ -67,10 +67,8 @@ func (a *account) CreateAccount(ctx context.Context, in *models.CreateAccountReq
 
 	a.logger.Info("Successfully created an account", zap.Any("account", account))
 	return &models.CreateAccountResponse{
-		Username:  account.Username,
-		Role:      account.Role,
-		CreatedAt: account.CreatedAt,
-		UpdatedAt: account.UpdatedAt,
+		Username: account.Username,
+		Role:     account.Role,
 	}, nil
 }
 

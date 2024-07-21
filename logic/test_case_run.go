@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"example/server/configs"
+	"example/server/utils"
 	"fmt"
 	"io"
 	"net/http"
@@ -43,21 +44,22 @@ type testCaseRun struct {
 	testCaseRunConfig *configs.TestCaseRun
 }
 
-func (t testCaseRun) setupWorkingDir(workingDir string) error {
-	if strings.ToLower(t.language) == "java" {
-		if t.testCaseRunConfig.DownloadTestUrl != nil && t.testCaseRunConfig.TestLibraryName != nil {
-			junitURL := "https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.7.0/junit-platform-console-standalone-1.7.0.jar"
-			junitPath := filepath.Join(workingDir, "junit-platform-console-standalone-1.7.0.jar")
-			if err := t.downloadFile(junitURL, junitPath); err != nil {
-				t.logger.Error("fail to download test file in setupWorkingDir")
-				return fmt.Errorf("fail to download test file in setupWorkingDir")
-			}
-		}
-	} else if strings.ToLower(t.language) == "python" {
-		return nil
-	}
-	return nil
-}
+// func (t testCaseRun) setupWorkingDir(workingDir string) error {
+// 	if strings.ToLower(t.language) == "java" {
+// 		if t.testCaseRunConfig.DownloadTestUrl != nil && t.testCaseRunConfig.TestLibraryName != nil {
+// 			t.logger.Info(*t.testCaseRunConfig.DownloadTestUrl)
+// 			junitURL := *t.testCaseRunConfig.DownloadTestUrl
+// 			junitPath := filepath.Join(workingDir, *t.testCaseRunConfig.TestLibraryName)
+// 			if err := t.downloadFile(junitURL, junitPath); err != nil {
+// 				t.logger.Error(err.Error())
+// 				return fmt.Errorf("fail to download test file in setupWorkingDir")
+// 			}
+// 		}
+// 	} else if strings.ToLower(t.language) == "python" {
+// 		return nil
+// 	}
+// 	return nil
+// }
 
 func (t testCaseRun) Run(ctx context.Context, testCodeSnippet string, submissionCodeSnippet string, timeLimitInSecond string, memoryLimitInByte uint64) (RunOutput, error) {
 	hostWorkingDir, err := os.MkdirTemp("", "")
@@ -76,7 +78,7 @@ func (t testCaseRun) Run(ctx context.Context, testCodeSnippet string, submission
 		return RunOutput{}, err
 	}
 	workingDir := t.getWorkingDir()
-	err = t.setupWorkingDir(workingDir)
+	//err = t.setupWorkingDir(hostWorkingDir)
 	if err != nil {
 		return RunOutput{}, err
 	}
@@ -106,6 +108,13 @@ func (t testCaseRun) Run(ctx context.Context, testCodeSnippet string, submission
 			t.logger.With(zap.Error(err)).Error("failed to remove run test case container")
 		}
 	}()
+
+	// timeoutDuration, err := time.ParseDuration(timeLimitInSecond)
+	// if err != nil {
+	// 	return RunOutput{ReturnLog: "Server Error" + err.Error()}, err
+	// }
+	// contextTimeout, cancel := context.WithTimeout(context.Background(), timeoutDuration)
+	// defer cancel()
 
 	statusCh, errCh := t.dockerClient.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
 	select {
@@ -139,32 +148,40 @@ func (t testCaseRun) Run(ctx context.Context, testCodeSnippet string, submission
 			return RunOutput{}, errors.New("container logs are empty")
 		}
 
-		t.logger.Info("Container logs retrieved",
-			zap.String("stdout", stdoutLog),
-			zap.String("stderr", stderrLog))
+		// t.logger.Info("Container logs retrieved",
+		// 	zap.String("stdout", stdoutLog),
+		// 	zap.String("stderr", stderrLog))
 
 		returnLog, err := t.handleReturnLog(stderrLog, stdoutLog)
 		if err != nil {
-			return RunOutput{}, err
+			return RunOutput{ReturnLog: returnLog}, nil
 		}
 		return RunOutput{
 			ReturnLog: returnLog,
 		}, nil
+		// case <-contextTimeout.Done():
+		// 	return RunOutput{
+		// 		ReturnLog: "running submission failed: time limit exceeded > " + timeLimitInSecond,
+		// 	}, nil
 	}
 }
 
 func (t testCaseRun) handleReturnLog(stderrLog string, stdoutLog string) (returnLog string, err error) {
 	var result []string
-	if t.testCaseRunConfig.StdErr == true {
+	if t.testCaseRunConfig.StdErr {
 		result = append(result, stderrLog)
 	}
-	if t.testCaseRunConfig.StdOut == true {
+	if t.testCaseRunConfig.StdOut {
 		result = append(result, stdoutLog)
 	}
 	if len(result) == 0 {
-		return "", fmt.Errorf("No container log found")
+		return "No output stream", fmt.Errorf("No container log found")
 	} else {
-		return strings.Join(result, "\n"), nil
+		var result string = strings.Join(result, "\n")
+		if strings.ToLower(t.language) == "java" {
+			result = utils.FilterJUnitOutput(result)
+		}
+		return result, nil
 	}
 }
 
@@ -224,20 +241,35 @@ func (t testCaseRun) getWorkingDir() string {
 
 func (t testCaseRun) getContainerCommand(commandList []string, timeLimitInSecond string, testFileName string) []string {
 	command := make([]string, len(commandList))
-	for i := range commandList {
-		if commandList[i] == "$TIME_LIMIT" {
-			command[i] = timeLimitInSecond
-		} else if commandList[i] == "$TEST_FILE" {
-			command[i] = testFileName
-		} else if commandList[i] == "$MAIN_FILE" {
-			t.logger.Info("code file is" + (t.testCaseRunConfig.CodeFileName))
-			command[i] = t.testCaseRunConfig.CodeFileName
-		} else {
-			command[i] = commandList[i]
+	if strings.ToLower(t.language) == "python" {
+		for i := range commandList {
+			if commandList[i] == "$TIME_LIMIT" {
+				command[i] = timeLimitInSecond
+			} else if commandList[i] == "$TEST_FILE" {
+				command[i] = testFileName
+			} else if commandList[i] == "$MAIN_FILE" {
+				t.logger.Info("code file is" + (t.testCaseRunConfig.CodeFileName))
+				command[i] = t.testCaseRunConfig.CodeFileName
+			} else {
+				command[i] = commandList[i]
+			}
 		}
+		t.logger.Info("log cmd", zap.Any("command", command))
+		return command
+	} else if strings.ToLower(t.language) == "java" {
+		t.logger.Info("java language:" + strings.ToLower(t.language))
+		for index, item := range commandList {
+			if strings.Contains(item, "$TIME_LIMIT") {
+				newExecutingCommand := strings.Replace(item, "$TIME_LIMIT", timeLimitInSecond, 1)
+				command[index] = newExecutingCommand
+			} else {
+				command[index] = commandList[index]
+			}
+		}
+		t.logger.Info("log cmd", zap.Any("command", command))
+		return command
 	}
-	t.logger.Info("log cmd", zap.Any("command", command))
-	return command
+	return commandList
 }
 
 func (t testCaseRun) pullImage() error {
@@ -257,25 +289,29 @@ func (t testCaseRun) downloadFile(url, filepath string) error {
 	for i := 0; i < maxRetries; i++ {
 		resp, err := http.Get(url)
 		if err != nil {
-			fmt.Printf("Attempt %d: Error downloading file: %v\n", i+1, err)
+			t.logger.Warn("Attempt to download file failed",
+				zap.Int("attempt", i+1),
+				zap.Error(err),
+				zap.String("url", url))
 			if i == maxRetries-1 {
 				return err
 			}
-			time.Sleep(time.Second * 2) // Wait for 2 seconds before retrying
+			time.Sleep(time.Second * 2)
 			continue
 		}
 		defer resp.Body.Close()
 
 		out, err := os.Create(filepath)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to create file: %w", err)
 		}
 		defer out.Close()
 
 		_, err = io.Copy(out, resp.Body)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to write file content: %w", err)
 		}
+		t.logger.Info("File downloaded successfully", zap.String("path", filepath))
 		return nil
 	}
 	return fmt.Errorf("failed to download file after %d attempts", maxRetries)

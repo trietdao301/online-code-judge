@@ -39,10 +39,10 @@ func (t testCaseDataAccessor) GetTestCaseByProblemUUIDAndLanguage(ctx context.Co
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			t.logger.Info("No test case found", zap.String("problemUUID", problemUUID), zap.String("language", language))
-			return nil, nil // Return nil if no document is found
+			return &TestCase{}, nil // Return nil if no document is found
 		}
 		t.logger.Error("Failed to get test case", zap.String("problemUUID", problemUUID), zap.String("language", language), zap.Error(err))
-		return nil, err
+		return &TestCase{}, err
 	}
 	t.logger.Info("Retrieved test case", zap.String("UUID", testCase.UUID), zap.String("problemUUID", problemUUID), zap.String("language", language))
 	return &testCase, nil

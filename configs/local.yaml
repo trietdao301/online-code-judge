@@ -28,18 +28,18 @@ logic:
         name: Java
         test_case_run:
           image: "docker.io/library/openjdk:22-jdk-slim-buster"
-          command_template:
-            [
-             "/bin/sh", "-c",
-        "apt-get update && apt-get install -y wget && 
-        wget https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.7.0/junit-platform-console-standalone-1.7.0.jar && 
-        javac -cp junit-platform-console-standalone-1.7.0.jar Solution.java SolutionTest.java && 
-        java -jar junit-platform-console-standalone-1.7.0.jar --details verbose --reports-dir=reports --class-path . --select-class SolutionTest",
+          command_template: [
+              "/bin/sh",
+              "-c",
+              "apt-get update && apt-get install -y wget &&
+              wget https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.7.0/junit-platform-console-standalone-1.7.0.jar &&
+              javac -cp junit-platform-console-standalone-1.7.0.jar Solution.java SolutionTest.java &&
+              timeout --foreground $TIME_LIMIT java -jar junit-platform-console-standalone-1.7.0.jar --details verbose --reports-dir=reports --class-path . --select-class SolutionTest",
             ]
           cpu_quota: 1000000
           code_file_name: Solution.java
           test_file_name: SolutionTest.java
-          stdErr: false
+          stdErr: true
           stdOut: true
           download_test_url: https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.7.0/junit-platform-console-standalone-1.7.0.jar
           test_library_name: junit-platform-console-standalone-1.7.0.jar
@@ -52,5 +52,5 @@ logic:
           cpu_quota: 1000000
           code_file_name: main.py
           test_file_name: test.py
-          stdErr: true 
-          stdOut: true
+          stdErr: true
+          stdOut: false

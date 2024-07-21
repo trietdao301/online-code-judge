@@ -104,6 +104,7 @@ func (p problem) CreateProblem(ctx context.Context, in *models.CreateProblemRequ
 		DisplayName:            in.DisplayName,
 		Description:            in.Description,
 		AuthorAccountUUID:      in.AuthorAccountUUID,
+		AuthorName:             in.AuthorName,
 		TimeLimitInMillisecond: in.TimeLimitInMillisecond,
 		MemoryLimitInByte:      in.MemoryLimitInByte,
 		CreatedAt:              currentTime,

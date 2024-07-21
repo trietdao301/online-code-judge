@@ -63,19 +63,20 @@ func (s *apiServerHandler) CreateAccount(w http.ResponseWriter, r *http.Request)
 	var (
 		createAccountRequest models.CreateAccountRequest
 		context              = r.Context()
+		response             *models.CreateAccountResponse
 	)
 	err := json.NewDecoder(r.Body).Decode(&createAccountRequest)
 	if err != nil {
 		return WriteJSON(w, http.StatusBadRequest, "Invalid request body")
 	}
 
-	res, err := s.accountLogic.CreateAccount(context, &createAccountRequest)
+	response, err = s.accountLogic.CreateAccount(context, &createAccountRequest)
 	if err != nil {
 		s.logger.Info("Account creating fails")
-		return WriteJSON(w, http.StatusOK, err.Error())
+		return WriteJSON(w, http.StatusBadRequest, err.Error())
 	}
 
-	return WriteJSON(w, http.StatusOK, "Successfully created account for "+res.Username)
+	return WriteJSON(w, http.StatusOK, response)
 }
 
 func (s *apiServerHandler) DeleteAccount(w http.ResponseWriter, r *http.Request) error {

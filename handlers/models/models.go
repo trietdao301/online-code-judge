@@ -68,6 +68,7 @@ type CreateProblemRequest struct {
 	DisplayName            string
 	Description            string
 	AuthorAccountUUID      string
+	AuthorName             string
 	TimeLimitInMillisecond uint64
 	MemoryLimitInByte      uint64
 }
@@ -130,10 +131,8 @@ type CreateAccountRequest struct {
 	Role     string
 }
 type CreateAccountResponse struct {
-	Username  string
-	Role      string
-	CreatedAt string
-	UpdatedAt string
+	Username string
+	Role     string
 }
 
 type GetAccountListResponse struct {

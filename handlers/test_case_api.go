@@ -59,7 +59,7 @@ func (s *apiServerHandler) GetTestCase(w http.ResponseWriter, r *http.Request) e
 		return WriteJSON(w, http.StatusInternalServerError, "testCase is nil")
 	}
 	if err != nil {
-		return WriteJSON(w, http.StatusInternalServerError, err)
+		return WriteJSON(w, http.StatusInternalServerError, err.Error())
 	}
 	return WriteJSON(w, http.StatusOK, testCase)
 }

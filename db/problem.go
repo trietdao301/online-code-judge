@@ -37,6 +37,7 @@ type Problem struct {
 	Description            string                  `json:"description" bson:"description" validate:"required"`
 	TestCaseList           []TestCaseData          `json:"testCaseList" bson:"testCaseList"`
 	AuthorAccountUUID      string                  `json:"authorAccountUUID" bson:"authorAccountUUID" validate:"required"`
+	AuthorName             string                  `json:"authorName" bson:"authorName" validate:"required"`
 	TimeLimitInMillisecond uint64                  `json:"timeLimitInMillisecond" bson:"timeLimitInMillisecond"`
 	MemoryLimitInByte      uint64                  `json:"memoryLimitInByte" bson:"memoryLimitInByte"`
 	CreatedAt              string                  `json:"createdAt" bson:"createdAt"`

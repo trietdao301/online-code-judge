@@ -27,25 +27,30 @@ type Account struct {
 	UUID      string `json:"UUID" bson:"UUID" validate:"required"`
 	Username  string `json:"username" bson:"username" validate:"required"`
 	Password  string `json:"password" bson:"password" validate:"required"`
-	Role      string `json:"role" bson:"role" validate:"oneof=admin contestant problem_setter"`
+	Role      string `json:"role" bson:"role" validate:"oneof=Admin Contestant ProblemSetter"`
 	CreatedAt string `json:"createdAt" bson:"createdAt"`
 	UpdatedAt string `json:"updatedAt" bson:"updatedAt"`
 }
 
 func (a *accountDataAccessor) CreateAccount(ctx context.Context, account *Account) error {
 	filter := bson.M{
-		"UUID": account.UUID,
+		"username": account.Username,
 	}
-	usedAccount := a.db.FindOne(ctx, filter)
-	if usedAccount != nil {
-		return fmt.Errorf("Account is already existeds")
-	}
-	_, err := a.db.InsertOne(ctx, account)
+	var usedAccount Account
+	err := a.db.FindOne(ctx, filter).Decode(&usedAccount)
 	if err != nil {
-		a.logger.Error("fail to create account in database", zap.Error(err))
-		return err
+		if err == mongo.ErrNoDocuments {
+			a.logger.Info("Creating account")
+			_, err = a.db.InsertOne(ctx, account)
+			if err != nil {
+				a.logger.Error("fail to create account in database", zap.Error(err))
+				return err
+			}
+			return nil
+		}
 	}
-	return nil
+	a.logger.Error("Account is already existed")
+	return fmt.Errorf("Account is already existed")
 }
 
 func (a *accountDataAccessor) GetAccountByUsername(ctx context.Context, username string) (*Account, error) {

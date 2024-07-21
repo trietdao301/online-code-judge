@@ -17,11 +17,13 @@ func (s *apiServerHandler) GetProblemList(w http.ResponseWriter, r *http.Request
 	)
 	token, err := s.validateRequestAndExtractToken(r)
 	if err != nil {
-		return WriteJSON(w, http.StatusUnauthorized, err.Error())
+		s.logger.Error("token expired or no token provided")
+		return WriteJSON(w, http.StatusUnauthorized, "Token expired or no token provided")
 	}
 	_, role, _, err := s.tokenLogic.ExtractTokenData(ctx, token)
 	if err != nil {
-		return WriteJSON(w, http.StatusUnauthorized, err.Error())
+		s.logger.Error("fail to retrieve token data")
+		return WriteJSON(w, http.StatusNotAcceptable, "Token expired or no token provided")
 	}
 	switch role {
 	case RoleContestant:
