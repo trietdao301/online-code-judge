@@ -22,7 +22,7 @@ func init() {
 func SetupMongoDB() (*mongo.Client, context.Context, context.CancelFunc) {
 	uri := os.Getenv("MONGODB_URI")
 	if uri == "" {
-		panic("MONGODB_URI environment variable is not set")
+		uri = "mongodb://localhost:27017/"
 	}
 	client, ctx, cancel, err := connect(uri)
 	if err != nil {

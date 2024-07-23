@@ -1,14 +1,22 @@
-FROM golang:1.10 AS build
-WORKDIR /go/src
-COPY go ./go
-COPY main.go .
+# Start from the official Go image
+FROM golang:1.22
 
-ENV CGO_ENABLED=0
-RUN go get -d -v ./...
+# Set the working directory inside the container
+WORKDIR /app
 
-RUN go build -a -installsuffix cgo -o swagger .
+# Copy go mod and sum files
+COPY go.mod go.sum ./
 
-FROM scratch AS runtime
-COPY --from=build /go/src/swagger ./
-EXPOSE 8080/tcp
-ENTRYPOINT ["./swagger"]
+# Download all dependencies
+RUN go mod download && go mod verify
+
+# Copy the source code into the container
+COPY . .
+
+# Build the application
+RUN go build -v -o /usr/local/bin/app ./main.go
+
+EXPOSE 8080
+CMD ["app"]
+
+
