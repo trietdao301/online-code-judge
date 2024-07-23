@@ -1,8 +1,16 @@
 package utils
 
-import "github.com/docker/docker/client"
+import (
+	"log"
+
+	"github.com/docker/docker/client"
+)
 
 func InitializeDockerClient() (*client.Client, error) {
-	return client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		log.Printf("Error initializing Docker client: %v", err)
+		return nil, err
+	}
+	return cli, nil
 }
