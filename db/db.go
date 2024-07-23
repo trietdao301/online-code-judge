@@ -21,9 +21,11 @@ func init() {
 
 func SetupMongoDB() (*mongo.Client, context.Context, context.CancelFunc) {
 	uri := os.Getenv("MONGODB_URI")
+
 	if uri == "" {
 		uri = "mongodb://localhost:27017/"
 	}
+	fmt.Println(uri)
 	client, ctx, cancel, err := connect(uri)
 	if err != nil {
 		panic(fmt.Sprintf("Mongo DB Connect issue %s", err))
