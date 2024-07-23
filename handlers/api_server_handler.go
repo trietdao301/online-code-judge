@@ -25,7 +25,7 @@ type apiFunc func(http.ResponseWriter, *http.Request) error
 func makeHTTPHandleFunc(f apiFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		//w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
-		w.Header().Set("Access-Control-Allow-Origin", "https://online-code-judge-rh4sv43qv-trietdao301s-projects.vercel.app/")
+		w.Header().Set("Access-Control-Allow-Origin", "https://online-code-judge-n3fdugxqs-trietdao301s-projects.vercel.app")
 
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
