@@ -19,4 +19,5 @@ services:
       - mongodb_data:/data/db
 volumes:
   mongodb_data:
-    
+  - /var/run/docker.sock:/var/run/docker.sock
+  - /etc/letsencrypt:/etc/letsencrypt
