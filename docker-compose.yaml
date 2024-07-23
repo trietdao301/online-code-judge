@@ -3,11 +3,16 @@ services:
   cobox:
     image: cobox-server:latest
     ports:
-      - "8080:8080"
+      - "443:443"  # Changed from 8080 to 443 for HTTPS
     environment:
       - MONGODB_URI=${MONGODB_URI:-mongodb://mongodb:27017}
     depends_on:
       - mongodb
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/letsencrypt:/etc/letsencrypt
+    # If your app is not running as root, you might need to add:
+    # user: "1000:1000"  # Replace with the appropriate UID:GID
 
   mongodb:
     image: mongo
@@ -17,7 +22,6 @@ services:
       - '27017:27017'
     volumes:
       - mongodb_data:/data/db
+
 volumes:
   mongodb_data:
-  - /var/run/docker.sock:/var/run/docker.sock
-  - /etc/letsencrypt:/etc/letsencrypt
