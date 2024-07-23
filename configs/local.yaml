@@ -9,7 +9,7 @@ database:
 token:
   expires_in: 24h
 http:
-  address: "0.0.0.0:8080"
+  address: "0.0.0.0:443"
 logic:
   judge:
     schedule: "@every 5s"
