@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"crypto/tls"
 	"encoding/json"
 	"example/server/configs"
 	"example/server/logic"
@@ -119,16 +118,16 @@ func (s *apiServerHandler) Start() {
 	router.HandleFunc("/account/{accountUUID}", makeHTTPHandleFunc(s.handleAccount))
 	router.HandleFunc("/account-list", makeHTTPHandleFunc(s.handleAccountList))
 	router.HandleFunc("/login", makeHTTPHandleFunc(s.handleSession))
-	//log.Fatal(http.ListenAndServe(address, router))
-	srv := &http.Server{
-		Addr:    address,
-		Handler: router,
-		TLSConfig: &tls.Config{
-			MinVersion: tls.VersionTLS12,
-		},
-	}
+	log.Fatal(http.ListenAndServe(address, router))
+	// srv := &http.Server{
+	// 	Addr:    address,
+	// 	Handler: router,
+	// 	TLSConfig: &tls.Config{
+	// 		MinVersion: tls.VersionTLS12,
+	// 	},
+	// }
 
-	log.Printf("HTTPS Server started at %s", address)
-	log.Fatal(srv.ListenAndServeTLS("/etc/letsencrypt/live/94.72.127.243.nip.io/fullchain.pem",
-		"/etc/letsencrypt/live/94.72.127.243.nip.io/privkey.pem"))
+	// log.Printf("HTTPS Server started at %s", address)
+	// log.Fatal(srv.ListenAndServeTLS("/etc/letsencrypt/live/94.72.127.243.nip.io/fullchain.pem",
+	// 	"/etc/letsencrypt/live/94.72.127.243.nip.io/privkey.pem"))
 }
