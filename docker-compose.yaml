@@ -16,6 +16,8 @@ services:
     image: cobox-server:latest 
     environment:
       - MONGODB_URI=${MONGODB_URI:-mongodb://mongodb:27017}
+    ports:
+      - '8080:8080'
     depends_on:
       - mongodb
     volumes:
