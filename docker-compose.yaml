@@ -12,8 +12,8 @@ services:
         - ./letsencrypt:/etc/letsencrypt
       networks:
         - mynetwork
-  cobox:
-    image: cobox-server:latest 
+  coodbox:
+    image: coodbox-server:latest 
     environment:
       - MONGODB_URI=${MONGODB_URI:-mongodb://mongodb:27017}
     ports:
