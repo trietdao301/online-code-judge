@@ -1,16 +1,28 @@
 version: '3.3'
 services:
+  app:
+      image: 'jc21/nginx-proxy-manager:latest'
+      restart: unless-stopped
+      ports:
+        - '80:80'
+        - '81:81'
+        - '443:443'
+      volumes:
+        - ./data:/data
+        - ./letsencrypt:/etc/letsencrypt
+      networks:
+        - mynetwork
   cobox:
-    image: cobox-server:latest
-    ports:
-      - "443:443"  # Changed from 8080 to 443 for HTTPS
+    image: cobox-server:latest 
     environment:
       - MONGODB_URI=${MONGODB_URI:-mongodb://mongodb:27017}
     depends_on:
       - mongodb
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - /etc/letsencrypt:/etc/letsencrypt
+   
+    networks:
+      - mynetwork
     # If your app is not running as root, you might need to add:
     # user: "1000:1000"  # Replace with the appropriate UID:GID
 
@@ -22,6 +34,11 @@ services:
       - '27017:27017'
     volumes:
       - mongodb_data:/data/db
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
 
 volumes:
   mongodb_data:
