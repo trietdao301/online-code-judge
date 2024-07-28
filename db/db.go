@@ -26,7 +26,7 @@ func SetupMongoDB() (*mongo.Client, context.Context, context.CancelFunc) {
 		uri = "mongodb://localhost:27017/"
 	}
 	fmt.Println("uri is: " + uri)
-	client, ctx, cancel, err := connect("mongodb+srv://trietdao301:warcraft301@cobox.3bhsrkw.mongodb.net/?retryWrites=true&w=majority&appName=cobox")
+	client, ctx, cancel, err := connect(uri)
 	if err != nil {
 		panic(fmt.Sprintf("Mongo DB Connect issue %s", err))
 	}
