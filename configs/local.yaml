@@ -39,7 +39,7 @@ logic:
           cpu_quota: 1000000
           code_file_name: Solution.java
           test_file_name: SolutionTest.java
-          stdErr: false
+          stdErr: true
           stdOut: true
           download_test_url: https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.7.0/junit-platform-console-standalone-1.7.0.jar
           test_library_name: junit-platform-console-standalone-1.7.0.jar
