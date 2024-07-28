@@ -22,6 +22,7 @@ services:
       - mongodb
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp:/tmp
    
     networks:
       - mynetwork

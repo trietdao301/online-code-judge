@@ -62,7 +62,8 @@ type testCaseRun struct {
 // }
 
 func (t testCaseRun) Run(ctx context.Context, testCodeSnippet string, submissionCodeSnippet string, timeLimitInSecond string, memoryLimitInByte uint64) (RunOutput, error) {
-	hostWorkingDir, err := os.MkdirTemp("", "")
+	hostWorkingDir := "/tmp"
+	err := os.MkdirAll(hostWorkingDir, 0755)
 	if err != nil {
 		t.logger.Error("fail to make temp directory", zap.Error(err))
 		return RunOutput{}, err
@@ -196,19 +197,23 @@ func (t testCaseRun) createContainer(
 	commandTemplate []string,
 	CPUquota int64,
 ) (container.CreateResponse, error) {
-	programFileDirectory, codePath := filepath.Split(codeFile.Name())
-	_, testPath := filepath.Split(testFile.Name())
-	filepath.Join(workingDir, codePath)
-	filepath.Join(workingDir, testPath)
+	programFileDirectory, codeFileName := filepath.Split(codeFile.Name())
+	_, testFileName := filepath.Split(testFile.Name())
+	filepath.Join(workingDir, codeFileName)
+	filepath.Join(workingDir, testFileName)
+	t.logger.Info("codeFileName: " + codeFileName)
+	t.logger.Info("testFileName: " + testFileName)
 	t.logger.Info(workingDir)
-	t.logger.Info("CodeFile: " + codeFile.Name())
-	t.logger.Info("TestFile: " + testFile.Name())
+	t.logger.Info("CodePath: " + codeFile.Name())
+	t.logger.Info("TestPath: " + testFile.Name())
+	t.logger.Info("workDir: " + fmt.Sprintf("%s:%s", programFileDirectory, workingDir))
 	resp, err := t.dockerClient.ContainerCreate(ctx, &container.Config{
 		Image:      image,
 		Cmd:        t.getContainerCommand(commandTemplate, timeOutOfContainerInSecond, t.testCaseRunConfig.TestFileName),
 		WorkingDir: workingDir,
 	}, &container.HostConfig{
-		Binds: []string{fmt.Sprintf("%s:%s", programFileDirectory, workingDir)},
+		//Binds: []string{fmt.Sprintf("%s:%s", programFileDirectory, workingDir)},
+		Binds: []string{"/tmp:/work"},
 		Resources: container.Resources{
 			CPUQuota: CPUquota,
 			Memory:   int64(memoryLimitInByte)}, /// 256 * 1024 * 1024 = 256 MB
@@ -220,7 +225,7 @@ func (t testCaseRun) createContainer(
 }
 
 func (t testCaseRun) createTempCodeFile(ctx context.Context, hostWorkingDir string, sourceFileName string, content string) (*os.File, error) {
-	codeFilePath := filepath.Join(hostWorkingDir, sourceFileName)
+	codeFilePath := filepath.Join("/tmp", sourceFileName)
 	codeFile, err := os.Create(codeFilePath)
 	if err != nil {
 		t.logger.Error("failed to create source file", zap.Error(err))

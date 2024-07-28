@@ -53,4 +53,4 @@ logic:
           code_file_name: main.py
           test_file_name: test.py
           stdErr: true
-          stdOut: false
+          stdOut: true
