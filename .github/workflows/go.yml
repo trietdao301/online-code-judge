@@ -4,16 +4,9 @@
 name: Manual Deploy to VPS
 
 on:
-  workflow_dispatch:
-    inputs:
-      deploy_environment:
-        description: "Environment to deploy to"
-        required: true
-        default: "staging"
-        type: choice
-        options:
-          - staging
-          - production
+  push:
+    branches:
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest
