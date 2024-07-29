@@ -1,6 +1,6 @@
 module example/server
 
-go 1.22
+go 1.23
 
 require github.com/speakeasy-api/rest-template-go v0.0.0-20221129175501-c7d2ede8b257
 
