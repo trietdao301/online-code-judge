@@ -35,13 +35,17 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
-            cd /work/server
+            cd work/server || exit 1
+
             echo "Deploying to server VPS"
             echo "Pulling latest changes..."
             git pull origin main
+
             echo "Building Docker image..."
             docker build -t coodbox-server:latest .
+
             echo "Restarting containers..."
             docker-compose down
+
             docker-compose up -d
             echo "Deployment complete!"
