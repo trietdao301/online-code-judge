@@ -6,25 +6,15 @@ A web application similar to LeetCode where users can submit code, solve problem
 
 - [x] User authentication using JWT
 - [x] Role-based authorization (Contestant, Admin, Problem Setter)
-- [x] Problem listing
-  - [x] View all problems
-  - [x] Filter problems
 - [x] Problem management (Admin/Problem Setter)
-  - [x] Create new problems
-  - [x] Edit existing problems
-  - [x] Create submission templates
 - [x] Test case management (Admin/Problem Setter)
-  - [x] Create test cases
-  - [x] Edit test cases
 - [x] Code submission
   - [x] Submit code for a problem
   - [x] View submission history
 - [x] Submission judging
   - [x] Execute code in Docker containers
   - [x] Use Docker API for container management
-- [x] Results and feedback
-  - [x] View submission results
-  - [x] Access execution logs
+- [x] View result logs from container
 - [] Support languages
   - [x] Python
   - [x] Java
